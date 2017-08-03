@@ -5,33 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>AJAX</title>
+  <script src="node_modules/axios/dist/axios.js"></script>
 </head>
 <body>
   <!-- 여긴 아무것도 없습니다 -->
   <script>
-    // http://localhost:8000/api/post/ <- 끝에 slash빠지면 오류남
-    // 에 GET요청을 보내고, 결과를 console.log에 출력
+    var url = 'http://localhost:8000/api/post/';
+    var next;
+    var isEnd = false;
 
-    JS HTTP라이브러리
-      axios를 사용하도록 리펙토링
+    getPostList();
 
-    var httpRequest;
-    httpRequest = new XMLHttpRequest();
-    httpRequest.onreadystatechange = function() {
-      if (httpRequest.readyState == 4) {
-        var postList = JSON.parse(httpRequest.response);
-        for(var i = 0; i < postList.length; i++) {
-          console.log(postList[i]);
-          createElement
-          appendChild
+    // 더보기 버튼 추가하고 클릭시 getPostList출력
 
-          각 post를 순회할 때 마다,
-          하나의 div요소를 만들어 document에 추가
-        }
+    function getPostList() {
+      var curUrl = url;
+      if(next != undefined) {
+        curUrl = next;
       }
-    };
-    httpRequest.open('GET', 'http://localhost:8000/api/post/');
-    httpRequest.send();
+      if(isEnd) {
+        alert('마지막입니다');
+        return;
+      }
+      axios.get(curUrl)
+        .then(function(response) {
+          if(response.data.next != null && response.data.next != undefined) {
+            next = response.data.next;
+          } else {
+            isEnd = true;
+          }
+          var postList = response.data.results;
+          for (var i = 0; i < postList.length; i++) {
+            createPost(postList[i]);
+          }
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    }
+
+    function createPost(post) {
+      var div = document.createElement('div');
+      // 생성한 div내부의 HTML에 h1과 img태그를 추가
+      div.innerHTML = '<h1>[PK:' + post.pk + ']' + post.author.username + '</h1>';
+      div.innerHTML += '<img src="' + post.photo + '" alt="" width="100%"/>';
+      // 생성한 div를 body태그의 자식으로 추가
+      document.body.appendChild(div);
+    }
   </script>
 </body>
 </html>
